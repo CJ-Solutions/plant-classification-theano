@@ -15,6 +15,7 @@ To launch the webpage, enter in Ubuntu terminal:
 
 from flask import Flask, render_template, request, send_from_directory, redirect, url_for, json, Response
 import os
+import sys
 from webpage_utils import url_prediction, localfile_prediction, print_error, label_list_to_html
 homedir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
@@ -99,5 +100,9 @@ def api():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        listen = sys.argv[1]
+    else:
+        listen = "127.0.0.1"
     app.debug = False
-    app.run()
+    app.run(host=listen)
