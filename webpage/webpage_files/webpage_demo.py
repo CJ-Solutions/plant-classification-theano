@@ -51,13 +51,13 @@ def static_from_root():
 def url_post():
     url_list = request.form['url']
     url_list = [i.replace(' ', '') for i in url_list.split(' ') if i != '']
-    
+
     message = url_prediction(url_list)
-    
+
     if message['status'] == 'error':
         print_error(app, message)
         return redirect(url_for('intmain'))
-    
+
     if message['status'] == 'OK':
         return render_template('results.html', predictions=message)
 
@@ -65,21 +65,21 @@ def url_post():
 @app.route('/local_upload', methods=['POST'])
 def local_post():
     uploaded_files = request.files.getlist("local_files")
-    
+
     message = localfile_prediction(app, uploaded_files)
-    
+
     if message['status'] == 'error':
         print_error(app, message)
         return redirect(url_for('intmain'))
-    
+
     if message['status'] == 'OK':
         return render_template('results.html', predictions=message)
-    
+
 
 @app.route('/api', methods=['POST'])
 def api():
-    
-    mode = request.form.get('mode')    
+
+    mode = request.form.get('mode')
     if mode == 'url':
         im_list = request.form.getlist('url_list')
         message = url_prediction(im_list)
@@ -88,13 +88,13 @@ def api():
         message = localfile_prediction(app, im_list)
     else:
         message = {'status': 'error', 'Error_type': 'Invalid mode'}
-    
+
     js = json.dumps(message)
     if message['status'] == 'OK':
         resp = Response(js, status=200, mimetype='application/json')
     if message['status'] == 'error':
         resp = Response(js, status=400, mimetype='application/json')
-        
+
     return resp
 
 
