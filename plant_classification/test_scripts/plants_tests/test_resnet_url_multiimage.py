@@ -17,17 +17,19 @@ observation) using all available threads.
 * ... the same with the following N images ...
 """
 
-import numpy as np
 import os
 import sys
 import threading
 import json
 import time
 import os.path as op
+
+import numpy as np
+
+from .data_utils import data_augmentation
+from .model_utils import load_model
+
 homedir = op.abspath(op.join(__file__, op.pardir, op.pardir, op.pardir, op.pardir))
-sys.path.append(os.path.join(homedir, 'scripts'))
-from data_utils import data_augmentation
-from model_utils import load_model
 
 # Select dataset
 dataset = 'inaturalist'
@@ -42,7 +44,7 @@ if dataset == 'inaturalist':
 
 # Loading the model
 modelname = 'resnet50_6182classes_100epochs'
-test_func = load_model(os.path.join(homedir, 'scripts', 'training_weights', modelname + '.npz'), output_dim=6182)
+test_func = load_model(os.path.join(homedir, 'plant_classification', 'training_weights', modelname + '.npz'), output_dim=6182)
 
 # Launching prediction
 pred_dict = {'pred_lab': [], 'pred_prob': [], 'true_lab': [], 'im_per_obs': []}

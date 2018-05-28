@@ -11,15 +11,16 @@ This script contains all the commands to reproduce the results and figures
 of our paper on plant classification.
 """
 
-import numpy as np
 import json
-import matplotlib.pylab as plt
-from matplotlib.colors import LogNorm
 import os
 import sys
 import os.path as op
+
+import matplotlib.pylab as plt
+from matplotlib.colors import LogNorm
+import numpy as np
+
 homedir = op.abspath(op.join(__file__, op.pardir, op.pardir, op.pardir, op.pardir))
-sys.path.append(os.path.join(homedir, 'scripts'))
 
 # %% Load prediction dict and synsets
 
@@ -127,13 +128,13 @@ def plot_matrix(M, labels=None):
 def plot_multi_matrix(M, labels):
     fig, [ax1, ax2] = plt.subplots(1, 2)
     M = np.ma.masked_where(M == 0, M)
-    
+
     ax1.imshow(M, interpolation='none', vmin=0.0001, cmap='gray_r', norm=LogNorm(vmin=0.0001, vmax=1.))
     ax1.set_xticks(range(len(labels)))
     ax1.set_yticks(range(len(labels)))
     ax1.set_xticklabels(labels, rotation=90)
     ax1.set_yticklabels(labels)
-    
+
     ax2.imshow(M, interpolation='none', vmin=0.0001, cmap='gray_r', norm=LogNorm(vmin=0.0001, vmax=1.))
     ax2.yaxis.tick_right()
     ax2.yaxis.set_ticks_position('both')
@@ -141,7 +142,7 @@ def plot_multi_matrix(M, labels):
     ax2.set_yticks(range(len(labels)))
     ax2.set_xticklabels(labels, rotation=90)
     ax2.set_yticklabels(labels)
-    
+
     ax1.set_position([0.2, 0.5, 0.35, 0.35])
     ax2.set_position([0.41, 0.5, 0.35, 0.35])
 
@@ -220,8 +221,8 @@ ax2.set_xlabel('True label', fontsize=14)
 ax2.set_ylabel('Predicted label', fontsize=14)
 ax2.xaxis.set_label_position('top')
 
-cbaxes = fig.add_axes([0.49, 0.5, 0.01, 0.35]) 
-cb = plt.colorbar(im1, cax = cbaxes)  
+cbaxes = fig.add_axes([0.49, 0.5, 0.01, 0.35])
+cb = plt.colorbar(im1, cax = cbaxes)
 
 ax1.set_position([0.2, 0.5, 0.35, 0.35])
 ax2.set_position([0.45, 0.5, 0.35, 0.35])
@@ -281,9 +282,9 @@ for legobj in leg.legendHandles:
 
 for ax in [ax1, ax2]:
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(16)
     for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(16)
 
 
 #plt.savefig('multi_observations.png', dpi=600)

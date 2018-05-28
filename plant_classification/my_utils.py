@@ -5,13 +5,13 @@ Miscellanous functions used to train and evaluate in image recognition.
 Author: Ignacio Heredia
 Date: November 2016
 """
-
-import numpy as np
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-import resnet50_class as resnet
-from data_utils import data_augmentation, standard_tencrop_batch
+
+import numpy as np
+
+import plant_classification.resnet50_class as resnet
+from plant_classification.data_utils import data_augmentation, standard_tencrop_batch
 
 
 def test_predictions(test_func, im_list, aug_params=None, crop_mode='random'):
@@ -61,7 +61,7 @@ def test_predictions(test_func, im_list, aug_params=None, crop_mode='random'):
 def single_prediction(test_func, im_list, aug_params=None, crop_mode='random'):
     """
     Function for identying a SINGLE plant with one or more images.
-    It combines the predictions for all the images to output the best possible 
+    It combines the predictions for all the images to output the best possible
     labels overall.
 
     Parameters

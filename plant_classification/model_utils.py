@@ -5,14 +5,15 @@ Miscellanous functions load model for image recognition.
 Author: Ignacio Heredia
 Date: November 2016
 """
+import os
+import sys
 
 import numpy as np
 import theano
 import theano.tensor as T
 import lasagne
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.realpath(__file__))) 
+
+from plant_classification.models.resnet50 import build_model
 
 theano.config.floatX = 'float32'
 
@@ -35,7 +36,6 @@ def load_model(modelweights, output_dim):
     """
     print 'Loading the model...'
     input_var = T.tensor4('X', dtype=theano.config.floatX)
-    from models.resnet50 import build_model
     net = build_model(input_var, output_dim)
     # Load pretrained weights
     with np.load(modelweights) as f:

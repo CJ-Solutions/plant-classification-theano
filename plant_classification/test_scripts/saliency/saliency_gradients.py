@@ -5,8 +5,8 @@ Saliency maps using gradients
 Author: Ignacio Heredia
 Date: November 2017
 
-Computed saliency maps using vanilla/guided backprop gradients + smoothgrad. 
-Some pieces of code have been shamelessly borrowed from Jan Schluter tutorial 
+Computed saliency maps using vanilla/guided backprop gradients + smoothgrad.
+Some pieces of code have been shamelessly borrowed from Jan Schluter tutorial
 (https://github.com/Lasagne/Recipes/blob/master/examples/Saliency%20Maps%20and%20Guided%20Backpropagation.ipynb).
 
 The configurations I have found to work the best HERE:
@@ -15,12 +15,11 @@ The configurations I have found to work the best HERE:
 Other configurations are very noisy or produce a lot of checkerboard patterns.
 """
 
-import numpy as np
 import sys
 import json
 import os.path as op
-homedir = op.abspath(op.join(__file__, op.pardir, op.pardir, op.pardir, op.pardir))
-sys.path.append(op.join(homedir, 'scripts'))
+
+import numpy as np
 from PIL import Image
 import matplotlib.pylab as plt
 
@@ -28,6 +27,7 @@ import theano
 import theano.tensor as T
 import lasagne
 
+homedir = op.abspath(op.join(__file__, op.pardir, op.pardir, op.pardir, op.pardir))
 
 # Load the image
 img_path = '/home/ignacio/castanus.jpg' #path to image
@@ -39,9 +39,9 @@ img = img.resize((X,Y))
 # Load the model
 modelname = 'resnet50_6182classes_100epochs'
 metadata = np.genfromtxt(op.join(homedir, 'data', 'data_splits', 'synsets.txt'), dtype='str', delimiter='/n')
-                       
+
 # Load training info
-info_file = op.join(homedir, 'scripts', 'training_info', modelname + '.json')
+info_file = op.join(homedir, 'plant_classification', 'training_info', modelname + '.json')
 with open(info_file) as datafile:
     train_info = json.load(datafile)
 output_dim = train_info['training_params']['output_dim']
@@ -56,7 +56,7 @@ def preprocess_batch(im_list):
     """
     im_list = np.array(im_list) - mean_RGB[None, None, None, :]  # mean centering
     im_list = im_list.transpose(0, 3, 1, 2)  # shape(N, 3, 224, 224)
-    im_list = im_list[:, ::-1, :, :]  # switch from RGB to BGR   
+    im_list = im_list[:, ::-1, :, :]  # switch from RGB to BGR
     return im_list.astype(np.float32)
 
 
@@ -64,13 +64,13 @@ def guided_backprop(net):
     """
     Modify the gradient of the relu to implement guided backpropagation
     """
-    
+
     class ModifiedBackprop(object):
 
         def __init__(self, nonlinearity):
             self.nonlinearity = nonlinearity
             self.ops = {}  # memoizes an OpFromGraph instance per tensor type
-    
+
         def __call__(self, x):
             # OpFromGraph is oblique to Theano optimizations, so we need to move
             # things to GPU ourselves if needed.
@@ -96,15 +96,15 @@ def guided_backprop(net):
                 self.ops[tensor_type] = op
             # And apply the memoized Op to the input we got.
             return self.ops[tensor_type](x)
-    
+
     class GuidedBackprop(ModifiedBackprop):
-        
+
         def grad(self, inputs, out_grads):
             (inp,) = inputs
             (grd,) = out_grads
             dtype = inp.dtype
             return (grd * (inp > 0).astype(dtype) * (grd > 0).astype(dtype),)
-    
+
     relu = lasagne.nonlinearities.rectify
     relu_layers = [layer for layer in lasagne.layers.get_all_layers(net['prob'])
                    if getattr(layer, 'nonlinearity', None) is relu]
@@ -112,7 +112,7 @@ def guided_backprop(net):
     for layer in relu_layers:
         layer.nonlinearity = modded_relu
 
-    return net    
+    return net
 
 
 def load_model(modelweights, output_dim, use_guided_backprop=True):
@@ -139,10 +139,10 @@ def load_model(modelweights, output_dim, use_guided_backprop=True):
     with np.load(modelweights) as f:
         param_values = [f['arr_%d' % i] for i in range(len(f.files))]
     lasagne.layers.set_all_param_values(net['prob'], param_values)
-    
+
     if use_guided_backprop:
         net = guided_backprop(net)
-        
+
     return net
 
 
@@ -165,11 +165,11 @@ def vanilla_map(img, saliency_func, magnitude=False):
     saliency_map, max_class = saliency_func(im_list) #shape (N,3,224,224)
 
     if magnitude:
-        saliency_map = saliency_map ** 2    
+        saliency_map = saliency_map ** 2
     saliency_map = np.mean(saliency_map, axis=0) #mean across batch (1 image)
     saliency_map = np.abs(saliency_map)
     saliency_map = np.sum(saliency_map, axis=0) #sum accross channels
-    
+
     vmax = np.percentile(saliency_map, 99)
     vmin = np.amin(saliency_map)
     saliency_map = np.clip((saliency_map - vmin)/(vmax - vmin), 0, 1)
@@ -182,7 +182,7 @@ def smoothgrad_map(img, saliency_func, N=40, noise=0.2, magnitude=False):
     Smoothgrad function
     It averages over several saliency maps created with different noise to obtain
     a cleaner image.
-    
+
     Parameters
     ----------
     N : int
@@ -190,13 +190,13 @@ def smoothgrad_map(img, saliency_func, N=40, noise=0.2, magnitude=False):
     noise : float in range [0,1]
         Relative noise level. Values beteween 10-30% ussually work well.
     magnitude : bool
-        Compute the square of the grads. Default to False although in the original 
+        Compute the square of the grads. Default to False although in the original
         paper was set to True but here seem to favour checkerboard patterns.
     """
     img_arr = np.array(img)
     mean = np.array([0, 0, 0])
     std = noise * (np.amax(img_arr, axis=(0,1)) - np.amin(img_arr, axis=(0,1))) #noise adapted to channel variance
-    
+
     im_list = [np.array(img)] * N
     im_list = np.array(im_list) + np.random.normal(mean, std, (N, 224, 224, 3))
     im_list = np.clip(im_list, 0, 255)
@@ -204,28 +204,28 @@ def smoothgrad_map(img, saliency_func, N=40, noise=0.2, magnitude=False):
     saliency_map, max_class = saliency_func(im_list)
 
     if magnitude:
-        saliency_map = saliency_map ** 2    
+        saliency_map = saliency_map ** 2
     saliency_map = np.mean(saliency_map, axis=0) #mean across batch
     saliency_map = np.abs(saliency_map)
     saliency_map = np.sum(saliency_map, axis=0) #sum accross channels
-    
+
     vmax = np.percentile(saliency_map, 99)
     vmin = np.amin(saliency_map)
     saliency_map = np.clip((saliency_map - vmin)/(vmax - vmin), 0, 1)
-                           
+
     return saliency_map
-    
+
 
 def plots(saliency_map):
     """
 	Different plots for saliency maps
-    
+
     Parameters
     ----------
     saliency_map : np.array shape(x,y)
         Map to be plotted
     """
-    
+
     # Plot mask and original image
     fig, ax = plt.subplots(1,2, figsize=(12, 4))
     cf = ax[0].imshow(saliency_map, clim=[np.amin(saliency_map), np.amax(saliency_map)])
@@ -235,14 +235,14 @@ def plots(saliency_map):
     ori_patch = np.array(img)[(X-x)/2:(X+x)/2, (Y-y)/2:(Y+y)/2] #central patch
     ax[1].imshow(ori_patch)
     ax[1].set_title('Original image')
-    
+
     # Plot contour plots of the mask over the image
     plt.figure()
     plt.imshow(ori_patch)
     CS = plt.contour(np.arange(saliency_map.shape[0]), np.arange(saliency_map.shape[1]), saliency_map)
     plt.clabel(CS, inline=1, fontsize=10)
-    plt.title('Contour plot')    
-    
+    plt.title('Contour plot')
+
     # Plot RGBA image (soft mask)
     plt.figure()
     saliency_map -= np.amin(saliency_map)
@@ -254,21 +254,21 @@ def plots(saliency_map):
 
 
 # Load net weights
-weights_path = op.join(homedir, 'scripts', 'training_weights', modelname + '.npz')
+weights_path = op.join(homedir, 'plant_classification', 'training_weights', modelname + '.npz')
 net = load_model(weights_path, output_dim=output_dim, use_guided_backprop=True)
-saliency_func = compile_saliency_function(net)  
+saliency_func = compile_saliency_function(net)
 
 if __name__ == "__main__":
-    
+
 	##Plot single method
     #saliency_map = smoothgrad_map(img, saliency_func)
     #plots(saliency_map)
-    
+
     # Compare all the methods
     img_path = '/home/ignacio/castanus.jpg' #path to image
     img = Image.open(img_path)
     img = img.resize((224, 224))
-    
+
     fig, ax = plt.subplots(2,4)
     ax = ax.flatten()
     plt_count = 0
@@ -284,4 +284,4 @@ if __name__ == "__main__":
                 ax[plt_count].imshow(saliency_map)
                 ax[plt_count].set_title('{} | {} | {}'.format(i,j,k))
                 plt_count += 1
-        
+

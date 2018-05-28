@@ -24,13 +24,13 @@ threads in the computer as possible using threading.Treads().
 import urllib
 import requests
 import json
-import numpy as np
 import os
 import time
 import threading
 from StringIO import StringIO
 import os.path as op
 
+import numpy as np
 
 homedir = op.abspath(op.join(__file__, op.pardir, op.pardir, op.pardir, op.pardir))
 

@@ -59,8 +59,8 @@ GTAGS
 
 # Things specific to this project #
 ###################################
-scripts/training_weights/*
-!scripts/training_weights/.gitkeep
+plant_classification/training_weights/*
+!plant_classification/training_weights/.gitkeep
 webpage/model_files/training_weights/*
 !webpage/model_files/training_weights/.gitkeep
 webpage/model_files/training_info/*

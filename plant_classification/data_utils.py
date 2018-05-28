@@ -9,12 +9,13 @@ Date: September 2016
 
 import os
 import sys
-import numpy as np
-from PIL import Image, ImageEnhance
-import requests
 from io import BytesIO
 import threading
 import Queue
+
+import numpy as np
+from PIL import Image, ImageEnhance
+import requests
 
 
 def data_splits(im_dir='/media/ignacio/Datos/plant_net/images_ori', tag=False):
@@ -95,7 +96,7 @@ def data_augmentation(im_list, mode='standard', tags=None, params=None, im_size=
         - stretch ([0,1] float): randomly stretch image.
         - crop ([0,1] float): randomly take an image crop.
         - zoom ([0,1] float): random zoom applied to crop_size.
-          --> Therefore the effective crop size at each iteration will be a 
+          --> Therefore the effective crop size at each iteration will be a
               random number between 1 and crop*(1-zoom). For example:
                   * crop=1, zoom=0: no crop of the image
                   * crop=1, zoom=0.1: random crop of random size between 100% image and 90% of the image
@@ -126,7 +127,7 @@ def data_augmentation(im_list, mode='standard', tags=None, params=None, im_size=
     if mean_RGB is None:
         mean_RGB = np.array([107.59348955,  112.1047813,   80.9982362])
     else:
-        mean_RGB = np.array(mean_RGB)   
+        mean_RGB = np.array(mean_RGB)
 
     if mode == 'minimal':
         params = {'mirror':False, 'rotation':False, 'stretch':False, 'crop':False, 'pixel_noise':False}
@@ -134,10 +135,10 @@ def data_augmentation(im_list, mode='standard', tags=None, params=None, im_size=
         params = {'mirror':True, 'rotation':True, 'stretch':0.3, 'crop':1., 'zoom':0.3, 'pixel_noise':False}
     if mode == 'test':
         params = {'mirror':True, 'rotation':True, 'stretch':0.1, 'crop':.9, 'zoom':0.1, 'pixel_noise':False}
-    
+
     batch = []
     for i, filename in enumerate(im_list):
-        
+
         if filemode == 'local':
             im = Image.open(filename)
             im = im.convert('RGB')
@@ -145,31 +146,31 @@ def data_augmentation(im_list, mode='standard', tags=None, params=None, im_size=
             filename = BytesIO(requests.get(filename).content)
             im = Image.open(filename)
             im = im.convert('RGB')
-                
+
         if params['stretch']:
             stretch = params['stretch']
             stretch_factor = np.random.uniform(low=1.-stretch/2, high=1.+stretch/2, size=2)
             im = im.resize((im.size * stretch_factor).astype(int))
-            
+
         if params['crop']:
             effective_zoom = np.random.rand() * params['zoom']
             crop = params['crop'] - effective_zoom
-            
+
             ly, lx = im.size
-            crop_size = crop * min([ly, lx]) 
+            crop_size = crop * min([ly, lx])
             rand_x = np.random.randint(low=0, high=lx-crop_size + 1)
             rand_y = np.random.randint(low=0, high=ly-crop_size + 1)
-                
+
             min_yx = np.array([rand_y, rand_x])
             max_yx = min_yx + crop_size #square crop
             im = im.crop(np.concatenate((min_yx, max_yx)))
-            
+
         if params['mirror']:
             if np.random.random() > 0.5:
                 im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if np.random.random() > 0.5:
                 im = im.transpose(Image.FLIP_TOP_BOTTOM)
-        
+
         if params['rotation']:
             rot = np.random.choice([0, 90, 180, 270])
             if rot == 90:
@@ -177,34 +178,34 @@ def data_augmentation(im_list, mode='standard', tags=None, params=None, im_size=
             if rot == 180:
                 im = im.transpose(Image.ROTATE_180)
             if rot == 270:
-                im = im.transpose(Image.ROTATE_270)            
+                im = im.transpose(Image.ROTATE_270)
 
         if params['pixel_noise']:
-            
+
             #not used by default as it does not seem to improve much the performance,
             #but more than DOUBLES the data augmentation processing time.
-            
+
             # Color
             color_factor = np.random.normal(1, 0.3)  #1: original
             color_factor = np.clip(color_factor, 0., 2.)
             im = ImageEnhance.Color(im).enhance(color_factor)
-            
+
             # Brightness
             brightness_factor = np.random.normal(1, 0.2)  #1: original
             brightness_factor = np.clip(brightness_factor, 0.5, 1.5)
             im = ImageEnhance.Brightness(im).enhance(brightness_factor)
-            
+
             # Contrast
             contrast_factor = np.random.normal(1, 0.2)  #1: original
             contrast_factor = np.clip(contrast_factor, 0.5, 1.5)
             im = ImageEnhance.Contrast(im).enhance(contrast_factor)
-            
+
             # Sharpness
             sharpness_factor = np.random.normal(1, 0.4)  #1: original
             sharpness_factor = np.clip(sharpness_factor, 0., 1.)
             im = ImageEnhance.Sharpness(im).enhance(sharpness_factor)
 
-#            # Gaussian Noise #severely deteriorates learning 
+#            # Gaussian Noise #severely deteriorates learning
 #            im = np.array(im)
 #            noise = np.random.normal(0, 15, im.shape)
 #            noisy_image = np.clip(im + noise, 0, 255).astype(np.uint8)
@@ -360,13 +361,13 @@ def meanRGB(im_list, verbose=False):
     print 'Computing mean RGB pixel ...'
     mean, std = np.zeros(3), np.zeros(3)
     for i, filename in enumerate(im_list):
-        
+
         if verbose:# Write completion bar
             n = 1. * i / len(im_list)
             sys.stdout.write('\r')
             sys.stdout.write("[{:20}] {}%".format('='*int(n/0.05), int(100*n)))
             sys.stdout.flush()
-        
+
         # Process image
         im = np.array(Image.open(filename)).reshape(-1, 3)
         mean += np.mean(im, axis=0)

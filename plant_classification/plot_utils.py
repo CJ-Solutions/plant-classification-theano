@@ -5,16 +5,16 @@ Miscellanous functions used plot in image recognition.
 Author: Ignacio Heredia
 Date: November 2016
 """
-
-import numpy as np
-import matplotlib.pylab as plt
-from data_utils import data_augmentation
-from PIL import Image
-from scipy.signal import savgol_filter
-import requests
 from io import BytesIO
 import json
 
+import numpy as np
+import matplotlib.pylab as plt
+from PIL import Image
+from scipy.signal import savgol_filter
+import requests
+
+from plant_classification.data_utils import data_augmentation
 
 def training_plots(info_file, filtering=True):
     """
@@ -78,16 +78,16 @@ def augmentation_demo(filename, it=20, mean_RGB=None):
     if mean_RGB is None:
         mean_RGB = np.array([107.59348955,  112.1047813,   80.9982362])
     else:
-        mean_RGB = np.array(mean_RGB)  
+        mean_RGB = np.array(mean_RGB)
     batch = data_augmentation([filename]*it, mean_RGB=mean_RGB)
-    
+
     plt.ion()
     fig, [ax1, ax2] = plt.subplots(1, 2, num=1)
     ax1.set_title('Original image')
     ax2.set_title('Transformed image')
     image = Image.open(filename)
     ax1.imshow(np.asarray(image))
-    
+
     mean_RGB = mean_RGB.astype(np.float32)
     for im in batch:
         im = im[::-1, :, :]

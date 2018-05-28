@@ -10,15 +10,17 @@ This file contains several commands for testing a convolutional net for image
 classification.
 """
 
-import numpy as np
 import os
 import sys
 import json
+
+import numpy as np
+
+from plant_classification.my_utils import single_prediction, test_predictions
+from plant_classification.model_utils import load_model
+from plant_classification.plot_utils import augmentation_demo, training_plots, test_plot
+
 homedir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.append(os.path.join(homedir, 'scripts'))
-from my_utils import single_prediction, test_predictions
-from model_utils import load_model
-from plot_utils import augmentation_demo, training_plots, test_plot
 
 metadata = np.genfromtxt(os.path.join(homedir, 'data', 'data_splits', 'synsets.txt'), dtype='str', delimiter='/n')
 metadata_binomial = np.genfromtxt(os.path.join(homedir, 'data', 'data_splits', 'synsets_binomial.txt'), dtype='str', delimiter='/n')
@@ -26,14 +28,14 @@ metadata_binomial = np.genfromtxt(os.path.join(homedir, 'data', 'data_splits', '
 modelname = 'resnet50_6182classes_100epochs'
 
 # Load training info
-info_file = os.path.join(homedir, 'scripts', 'training_info', modelname + '.json')
+info_file = os.path.join(homedir, 'plant_classification', 'training_info', modelname + '.json')
 with open(info_file) as datafile:
     train_info = json.load(datafile)
 mean_RGB = train_info['augmentation_params']['mean_RGB']
 output_dim = train_info['training_params']['output_dim']
 
 # Load net weights
-test_func = load_model(os.path.join(homedir, 'scripts', 'training_weights', modelname + '.npz'), output_dim=output_dim)
+test_func = load_model(os.path.join(homedir, 'plant_classification', 'training_weights', modelname + '.npz'), output_dim=output_dim)
 
 # %% Demo data augmention
 
@@ -42,7 +44,7 @@ augmentation_demo(im_path)
 
 # %% Plot training information
 
-#info_file = os.path.join(homedir, 'scripts', 'training_info', modelname + '.json')
+#info_file = os.path.join(homedir, 'plant_classification', 'training_info', modelname + '.json')
 training_plots(info_file)
 
 # %% Predict list of local images

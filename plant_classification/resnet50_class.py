@@ -9,8 +9,6 @@ Class for training a resnet50 for a new dataset by finetuning the weights
 already pretrained with ImageNet.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 import time
 import pickle
 import json
@@ -18,14 +16,15 @@ import collections
 import inspect
 import os
 import sys
-homedir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(os.path.join(homedir, 'scripts'))
-from data_utils import iterate_minibatches, data_augmentation
 
+import numpy as np
+import matplotlib.pyplot as plt
 import theano
 import theano.tensor as T
 import lasagne
-from models.resnet50 import build_model
+
+from plant_classification.data_utils import iterate_minibatches, data_augmentation
+from plant_classification.models.resnet50 import build_model
 
 theano.config.floatX = 'float32'
 
@@ -263,8 +262,8 @@ class prediction_net(object):
 
         if save_model:
             filename = 'resnet50_' + str(self.output_dim) + 'classes_' + str(self.num_epochs) + 'epochs'
-            with open(os.path.join(homedir, 'scripts', 'training_info', filename + '.json'), 'w') as outfile:
+            with open(os.path.join(homedir, 'plant_classification', 'training_info', filename + '.json'), 'w') as outfile:
                 json.dump(train_info, outfile)
-            np.savez(os.path.join(homedir, 'scripts', 'training_weights', filename + '.npz'), *lasagne.layers.get_all_param_values(net['prob']))
+            np.savez(os.path.join(homedir, 'plant_classification', 'training_weights', filename + '.npz'), *lasagne.layers.get_all_param_values(net['prob']))
 
         return test_fn
