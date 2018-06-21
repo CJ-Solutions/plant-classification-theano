@@ -123,7 +123,7 @@ def image_link(pred_lab):
     Return link to Google images
     """
     base_url = 'https://www.google.es/search?'
-    params = {'tbm':'isch','q':i}
+    params = {'tbm':'isch','q':pred_lab}
     link = base_url + requests.compat.urlencode(params)
     return link
 
@@ -133,5 +133,5 @@ def wikipedia_link(pred_lab):
     Return link to wikipedia webpage
     """
     base_url = 'https://en.wikipedia.org/wiki/'
-    link = base_url + i.replace(' ', '_')
+    link = base_url + pred_lab.replace(' ', '_')
     return link
