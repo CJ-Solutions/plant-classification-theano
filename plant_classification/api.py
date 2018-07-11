@@ -48,18 +48,18 @@ def catch_error(f):
 
 @catch_error
 def predict_url(urls, test_func=test_func):
-    if not isinstance(filenames, list):
-        filenames = [filenames]
+    if not isinstance(urls, list):
+        urls = [urls]
 
-    pred_lab, pred_prob = single_prediction(test_func,
-                                            im_list=url_list,
-                                            aug_params={'mean_RGB': mean_RGB,
-                                                        'filemode':'url'})
+    pred_lab, pred_prob = my_utils.single_prediction(test_func,
+                                                     im_list=urls,
+                                                     aug_params={'mean_RGB': mean_RGB,
+                                                                 'filemode':'url'})
     return format_prediction(pred_lab, pred_prob)
 
 
 @catch_error
-def predict_local(filenames, test_func=test_func):
+def predict_file(filenames, test_func=test_func):
     if not isinstance(filenames, list):
         filenames = [filenames]
 
@@ -71,7 +71,7 @@ def predict_local(filenames, test_func=test_func):
 
 
 @catch_error
-def predict_from_data(images, test_func=test_func):
+def predict_data(images, test_func=test_func):
     if not isinstance(images, list):
         images = [images]
 
@@ -135,3 +135,14 @@ def wikipedia_link(pred_lab):
     base_url = 'https://en.wikipedia.org/wiki/'
     link = base_url + pred_lab.replace(' ', '_')
     return link
+
+
+def metadata():
+    d = {
+        "author": None,
+        "description": None,
+        "url": None,
+        "license": None,
+        "version": None,
+    }
+    return d
