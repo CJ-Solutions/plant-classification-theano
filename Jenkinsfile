@@ -10,8 +10,8 @@ pipeline {
     }
 
     environment {
-        author_name = "V.Kozlov (KIT)"
-        author_email = "valentin.kozlov@kit.edu"
+        author_name = "Lara Lloret Iglesias"
+        author_email = "lloret@ifca.unican.es"
         app_name = "plant-classification-theano"
         job_location = "Pipeline-as-code/DEEP-OC-org/DEEP-OC-plant-classification-theano/master"
     }
