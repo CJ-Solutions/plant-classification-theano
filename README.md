@@ -1,5 +1,7 @@
 # Plant Classification with Lasagne/Theano
 
+[![Build Status](https://jenkins.indigo-datacloud.eu:8080/buildStatus/icon?job=Pipeline-as-code/DEEP-OC-org/plant-classification-theano/package)](https://jenkins.indigo-datacloud.eu:8080/job/Pipeline-as-code/job/DEEP-OC-org/job/plant-classification-theano/job/package/)
+
 **Author** Ignacio Heredia
 
 **Date** February 2017
